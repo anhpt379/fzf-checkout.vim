@@ -151,7 +151,6 @@ function! fzf_checkout#list(bang, type)
         \ '--nth', '1',
         \ '--expect', l:valid_keys,
         \ '--ansi',
-        \ '--exact',
         \ '--print-query',
         \ '--preview-window=right:60%',
         \ '--preview', 'git log -n 50 --color=always --date=relative --abbrev=7 --pretty="format:%C(auto,blue)%>(12,trunc)%ad %C(auto,yellow)%h %C(auto,green)%aN %C(auto,reset)%s%C(auto,red)% gD% D" (echo {} | sed "s/.* //")',
