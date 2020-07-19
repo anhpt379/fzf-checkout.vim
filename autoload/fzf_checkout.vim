@@ -148,7 +148,7 @@ function! fzf_checkout#list(bang, type)
         \ ' sed "/^\s*$/d"'
   let l:options = [
         \ '--prompt', 'Checkout> ',
-        \ '--header', l:current,
+        \ '--header', 'On branch '.l:current.', '.toupper(g:fzf_checkout_delete_key).' to delete, '.toupper(g:fzf_checkout_create_key).' to create new',
         \ '--nth', '1',
         \ '--expect', l:valid_keys,
         \ '--ansi',
