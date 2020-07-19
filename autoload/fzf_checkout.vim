@@ -152,6 +152,7 @@ function! fzf_checkout#list(bang, type)
         \ '--nth', '1',
         \ '--expect', l:valid_keys,
         \ '--ansi',
+        \ '--exact',
         \ '--print-query',
         \]
   call fzf#run(fzf#wrap(
