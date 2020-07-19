@@ -128,7 +128,6 @@ function! fzf_checkout#list(bang, type)
         \ g:fzf_checkout_git_options
 
   " Filter to delete the current/previous ref, and HEAD from the list.
-  let l:color_seq = '\x1b\[1;33m'  " \x1b[1;33mbranch/name
   let l:filter =
         \ 'sed "s/^ *//g" | uniq | ' ..
         \ 'grep -v ' .. l:current_escaped .. '|' ..
@@ -148,7 +147,7 @@ function! fzf_checkout#list(bang, type)
         \ ' sed "/^\s*$/d"'
   let l:options = [
         \ '--prompt', 'Checkout> ',
-        \ '--header', 'On branch '.l:current.', '.toupper(g:fzf_checkout_delete_key).' to delete, '.toupper(g:fzf_checkout_create_key).' to create new',
+        \ '--header', toupper(g:fzf_checkout_delete_key).' to delete, '.toupper(g:fzf_checkout_create_key).' to create a new branch',
         \ '--nth', '1',
         \ '--expect', l:valid_keys,
         \ '--ansi',
