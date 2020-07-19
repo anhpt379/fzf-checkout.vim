@@ -46,6 +46,18 @@ function! s:checkout(lines)
           \ g:fzf_checkout_create_execute,
           \ g:fzf_checkout_create_execute,
           \)
+  elseif l:key ==# g:fzf_checkout_delete_key
+    " Create branch
+    let l:execute_options = {
+          \ 'terminal': 'split | terminal {git} branch -d {branch}',
+          \ 'system': 'echo system("{git} branch -d {branch}")',
+          \ 'bang': '!{git} branch -d {branch}',
+          \}
+    let l:execute_command = get(
+          \ l:execute_options,
+          \ g:fzf_checkout_delete_execute,
+          \ g:fzf_checkout_delete_execute,
+          \)
   else
     " Normal checkout
     let l:execute_options = {
@@ -92,7 +104,7 @@ function! fzf_checkout#list(bang, type)
   let l:previous = s:get_previous_ref()
   let l:previous_escaped = escape(l:previous, '/')
 
-  let l:valid_keys = join([g:fzf_checkout_track_key, g:fzf_checkout_create_key], ',')
+  let l:valid_keys = join([g:fzf_checkout_track_key, g:fzf_checkout_create_key, g:fzf_checkout_delete_key], ',')
 
   " See valid atoms in
   " https://github.com/git/git/blob/076cbdcd739aeb33c1be87b73aebae5e43d7bcc5/ref-filter.c#L474
