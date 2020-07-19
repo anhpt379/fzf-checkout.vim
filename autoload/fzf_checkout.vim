@@ -93,7 +93,7 @@ function! s:get_previous_ref()
     let l:previous = system('git rev-parse --short -q "@{-1}"')
   endif
   let l:previous = substitute(l:previous, '\n', '', 'g')
-  return l:previous
+  return trim(l:previous)
 endfunction
 
 
@@ -129,22 +129,22 @@ function! fzf_checkout#list(bang, type)
 
   " Filter to delete the current/previous ref, and HEAD from the list.
   let l:filter =
-        \ 'sed "s/^ *//g" | uniq | ' ..
-        \ 'grep -v ' .. l:current_escaped .. '|' ..
-        \ 'grep -v ' .. l:previous_escaped .. '|' ..
+        \ 'sed "s/^ *//g" | ' ..
         \ 'grep -v HEAD'
 
   if !empty(l:previous)
-    let l:previous = l:git_cmd .. ' --list ' .. l:previous
+    let l:filter = l:filter .. ' | grep -v ' .. l:previous_escaped
+    let l:previous = l:git_cmd .. ' --list ' .. l:previous .. ' | xargs'
   endif
 
   " Put the previous ref first,
   " list everything else,
   " remove empty lines.
   let l:source =
-        \ 'printf "$(' .. l:previous  .. ' | xargs)"\\n' ..
+        \ 'printf "$(' .. l:previous  .. ')"\\n' ..
         \ '"$(' .. l:git_cmd .. ' | ' .. l:filter .. ')" | ' ..
         \ ' sed "/^\s*$/d"'
+
   let l:options = [
         \ '--prompt', 'Checkout> ',
         \ '--header', toupper(g:fzf_checkout_delete_key).' to delete, '.toupper(g:fzf_checkout_create_key).' to create a new branch',
@@ -165,3 +165,4 @@ function! fzf_checkout#list(bang, type)
         \ a:bang,
         \))
 endfunction
+
