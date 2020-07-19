@@ -12,7 +12,7 @@ function! s:checkout(lines)
   let l:query = a:lines[0]
   let l:key = a:lines[1]
 
-  if l:key ==# g:fzf_checkout_create_key
+  if len(a:lines) == 2 || l:key ==# g:fzf_checkout_create_key
     let l:branch = l:query
   elseif len(a:lines) > 2
     let l:branch = fzf_checkout#get_ref(a:lines[2])
@@ -34,7 +34,7 @@ function! s:checkout(lines)
           \ g:fzf_checkout_track_execute,
           \ g:fzf_checkout_track_execute,
           \)
-  elseif l:key ==# g:fzf_checkout_create_key
+  elseif len(a:lines) == 2 || l:key ==# g:fzf_checkout_create_key
     " Create branch
     let l:execute_options = {
           \ 'terminal': 'split | terminal {git} checkout -b {branch}',
