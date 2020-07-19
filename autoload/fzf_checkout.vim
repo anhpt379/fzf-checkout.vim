@@ -27,7 +27,7 @@ function! s:checkout(lines)
     let l:execute_options = {
           \ 'terminal': 'split | terminal {git} checkout --track {branch}',
           \ 'system': 'echo system("{git} checkout --track {branch}")',
-          \ 'bang': '!{git} checkout --track {branch}',
+          \ 'bang': 'silent exec "!{git} checkout --track {branch}"',
           \}
     let l:execute_command = get(
           \ l:execute_options,
@@ -39,7 +39,7 @@ function! s:checkout(lines)
     let l:execute_options = {
           \ 'terminal': 'split | terminal {git} checkout -b {branch}',
           \ 'system': 'echo system("{git} checkout -b {branch}")',
-          \ 'bang': '!{git} checkout -b {branch}',
+          \ 'bang': 'silent exec "!{git} checkout -b {branch}"',
           \}
     let l:execute_command = get(
           \ l:execute_options,
@@ -51,7 +51,7 @@ function! s:checkout(lines)
     let l:execute_options = {
           \ 'terminal': 'split | terminal {git} branch -d {branch}',
           \ 'system': 'echo system("{git} branch -d {branch}")',
-          \ 'bang': '!{git} branch -d {branch}',
+          \ 'bang': 'silent exec "!{git} branch -d {branch}"',
           \}
     let l:execute_command = get(
           \ l:execute_options,
@@ -63,7 +63,7 @@ function! s:checkout(lines)
     let l:execute_options = {
           \ 'terminal': 'split | terminal {git} checkout {branch}',
           \ 'system': 'echo system("{git} checkout {branch}")',
-          \ 'bang': '!{git} checkout {branch}',
+          \ 'bang': 'silent exec "!{git} checkout {branch}"',
           \}
     let l:execute_command = get(
           \ l:execute_options,
