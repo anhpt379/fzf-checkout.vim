@@ -103,7 +103,7 @@ function! fzf_checkout#list(bang, type)
         \ '%(color:reset)%(color:blue)-> %(objectname:short)'
 
   if a:type ==# 'branch'
-    let l:subcommand = 'branch --all'
+    let l:subcommand = 'branch'
     let l:name = 'GCheckout'
   else
     let l:subcommand = 'tag'
