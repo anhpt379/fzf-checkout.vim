@@ -124,16 +124,16 @@ function! fzf_checkout#list(bang, type)
   let l:git_cmd =
         \ g:fzf_checkout_git_bin .. ' ' ..
         \ l:subcommand ..
-        \ ' --color=always --sort=refname:short --format=' .. shellescape(l:format) .. ' ' ..
+        \ ' --color=always --sort=refname:short ' ..
         \ g:fzf_checkout_git_options
 
   " Filter to delete the current/previous ref, and HEAD from the list.
   let l:color_seq = '\x1b\[1;33m'  " \x1b[1;33mbranch/name
   let l:filter =
-        \ 'sed -E ' ..
-        \ '-e "/^' .. l:color_seq .. l:current_escaped .. '\s.*$/d" ' ..
-        \ '-e "/^' .. l:color_seq .. l:previous_escaped .. '\s.*$/d" ' ..
-        \ '-e "/^' .. l:color_seq .. '(origin\/HEAD)|(HEAD)/d"'
+        \ 'sed "s/^ *//g" | uniq | ' ..
+        \ 'grep -v ' .. l:current_escaped .. '|' ..
+        \ 'grep -v ' .. l:previous_escaped .. '|' ..
+        \ 'grep -v HEAD'
 
   if !empty(l:previous)
     let l:previous = l:git_cmd .. ' --list ' .. l:previous
@@ -143,7 +143,7 @@ function! fzf_checkout#list(bang, type)
   " list everything else,
   " remove empty lines.
   let l:source =
-        \ 'printf "$(' .. l:previous  .. ')"\\n' ..
+        \ 'printf "$(' .. l:previous  .. ' | xargs)"\\n' ..
         \ '"$(' .. l:git_cmd .. ' | ' .. l:filter .. ')" | ' ..
         \ ' sed "/^\s*$/d"'
   let l:options = [
@@ -154,6 +154,8 @@ function! fzf_checkout#list(bang, type)
         \ '--ansi',
         \ '--exact',
         \ '--print-query',
+        \ '--preview-window=right:60%',
+        \ '--preview', 'git log -n 50 --color=always --date=relative --abbrev=7 --pretty="format:%C(auto,blue)%>(12,trunc)%ad %C(auto,yellow)%h %C(auto,green)%aN %C(auto,reset)%s%C(auto,red)% gD% D" (echo {} | sed "s/.* //")',
         \]
   call fzf#run(fzf#wrap(
         \ l:name,
