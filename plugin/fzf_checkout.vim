@@ -8,6 +8,7 @@ let g:fzf_checkout_create_execute = get(g:, 'fzf_checkout_create_execute', 'syst
 let g:fzf_checkout_create_key = get(g:, 'fzf_checkout_create_key', 'ctrl-n')
 let g:fzf_checkout_delete_execute = get(g:, 'fzf_checkout_delete_execute', 'system')
 let g:fzf_checkout_delete_key = get(g:, 'fzf_checkout_delete_key', 'ctrl-d')
+let g:fzf_checkout_previous_ref_first = get(g:, 'fzf_checkout_previous_ref_first', v:true)
 
 
 let s:prefix = get(g:, 'fzf_command_prefix', '')

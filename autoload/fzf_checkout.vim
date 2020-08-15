@@ -1,3 +1,15 @@
+" See valid atoms in
+" https://github.com/git/git/blob/076cbdcd739aeb33c1be87b73aebae5e43d7bcc5/ref-filter.c#L474
+const s:format = shellescape(
+      \ '%(color:yellow bold)%(refname:short)  ' ..
+      \ '%(color:reset)%(color:green)%(subject) ' ..
+      \ '%(color:reset)%(color:green dim italic)%(committerdate:relative) ' ..
+      \ '%(color:reset)%(color:blue)-> %(objectname:short)'
+      \)
+
+const s:color_regex = '\e\[[0-9;]\+m'
+
+
 function! fzf_checkout#get_ref(line)
   " Get first column.
   return split(a:line)[0]
@@ -97,23 +109,18 @@ function! s:get_previous_ref()
 endfunction
 
 
+function! s:remove_branch(branches, pattern)
+  " Find first occurrence and remove it
+  const l:index = match(a:branches, '^' .. s:color_regex .. a:pattern)
+  if (l:index != -1)
+    call remove(a:branches, l:index)
+    return v:true
+  endif
+  return v:false
+endfunction
+
+
 function! fzf_checkout#list(bang, type)
-  let l:current = s:get_current_ref()
-  let l:current_escaped = escape(l:current, '/')
-
-  let l:previous = s:get_previous_ref()
-  let l:previous_escaped = escape(l:previous, '/')
-
-  let l:valid_keys = join([g:fzf_checkout_track_key, g:fzf_checkout_create_key, g:fzf_checkout_delete_key], ',')
-
-  " See valid atoms in
-  " https://github.com/git/git/blob/076cbdcd739aeb33c1be87b73aebae5e43d7bcc5/ref-filter.c#L474
-  let l:format =
-        \ '%(color:yellow bold)%(refname:short)  ' ..
-        \ '%(color:reset)%(color:green)%(subject) ' ..
-        \ '%(color:reset)%(color:green dim italic)%(committerdate:relative) ' ..
-        \ '%(color:reset)%(color:blue)-> %(objectname:short)'
-
   if a:type ==# 'branch'
     let l:subcommand = 'branch'
     let l:name = 'GCheckout'
@@ -121,30 +128,31 @@ function! fzf_checkout#list(bang, type)
     let l:subcommand = 'tag'
     let l:name = 'GCheckoutTag'
   endif
-  let l:git_cmd =
-        \ g:fzf_checkout_git_bin .. ' ' ..
-        \ l:subcommand ..
-        \ ' --color=always --sort=refname:short ' ..
+  let l:git_cmd = printf('%s %s --color=always --sort=refname:short --format=%s %s',
+        \ g:fzf_checkout_git_bin,
+        \ l:subcommand,
+        \ s:format,
         \ g:fzf_checkout_git_options
+        \)
 
-  " Filter to delete the current/previous ref, and HEAD from the list.
-  let l:filter =
-        \ 'sed "s/^ *//g" | ' ..
-        \ 'grep -v HEAD'
+  let l:git_output = split(system(l:git_cmd), '\n')
 
-  if !empty(l:previous)
-    let l:filter = l:filter .. ' | grep -v ' .. l:previous_escaped
-    let l:previous = l:git_cmd .. ' --list ' .. l:previous .. ' | xargs'
+  " Delete the current and HEAD from the list.
+  let l:current = s:get_current_ref()
+  call s:remove_branch(l:git_output, escape(l:current, '/'))
+  call s:remove_branch(l:git_output, '\(origin/\)\?HEAD')
+
+  if g:fzf_checkout_previous_ref_first
+    " Put previous ref first
+    let l:previous = s:get_previous_ref()
+    if !empty(l:previous)
+      if (s:remove_branch(l:git_output, escape(l:previous, '/')))
+        call insert(l:git_output, system(l:git_cmd .. ' --list ' .. l:previous), 0)
+      endif
+    endif
   endif
 
-  " Put the previous ref first,
-  " list everything else,
-  " remove empty lines.
-  let l:source =
-        \ 'printf "$(' .. l:previous  .. ')"\\n' ..
-        \ '"$(' .. l:git_cmd .. ' | ' .. l:filter .. ')" | ' ..
-        \ ' sed "/^\s*$/d"'
-
+  let l:valid_keys = join([g:fzf_checkout_track_key, g:fzf_checkout_create_key], ',')
   let l:options = [
         \ '--prompt', 'Checkout> ',
         \ '--header', toupper(g:fzf_checkout_delete_key).' to delete, '.toupper(g:fzf_checkout_create_key).' to create a new branch',
@@ -158,7 +166,7 @@ function! fzf_checkout#list(bang, type)
   call fzf#run(fzf#wrap(
         \ l:name,
         \ {
-        \   'source': l:source,
+        \   'source': l:git_output,
         \   'sink*': function('s:checkout'),
         \   'options': l:options,
         \ },
